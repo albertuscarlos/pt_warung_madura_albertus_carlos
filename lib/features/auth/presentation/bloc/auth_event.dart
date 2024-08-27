@@ -7,11 +7,15 @@ abstract class AuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
-final class PostLoginData extends AuthEvent {
+final class SignIn extends AuthEvent {
   final LoginBodyModels loginBodyModels;
 
-  const PostLoginData({required this.loginBodyModels});
+  const SignIn({required this.loginBodyModels});
 
   @override
   List<Object> get props => [loginBodyModels];
 }
+
+final class SignOut extends AuthEvent {}
+
+final class AuthenticationCheck extends AuthEvent {}

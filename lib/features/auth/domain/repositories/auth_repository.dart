@@ -6,4 +6,6 @@ abstract class AuthRepository {
   Future<Either<Failure, String>> login({
     required LoginBodyModels loginBodyModels,
   });
+  Future<Either<Failure, String>> getToken();
+  Future<Either<Failure, void>> logout();
 }

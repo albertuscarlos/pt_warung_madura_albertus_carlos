@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:pt_warung_madura_albertus_carlos/core/constants/constants.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/auth/data/models/login_body_models.dart';
 import 'package:dio/dio.dart';
@@ -15,14 +17,18 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<String> login({
     required LoginBodyModels loginBodyModels,
   }) async {
-    final request = await dioClient.post(
-      Constants.loginUrl,
-      data: loginBodyModels.toJson(),
-    );
-    if (request.statusCode == 200) {
-      return request.data['data']['token'];
-    } else {
-      throw Exception();
+    try {
+      final request = await dioClient.post(
+        Constants.loginUrl,
+        data: loginBodyModels.toJson(),
+      );
+      if (request.statusCode == 200) {
+        return request.data['data']['token'];
+      } else {
+        throw Exception();
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 }

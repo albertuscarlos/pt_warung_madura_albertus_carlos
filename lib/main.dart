@@ -6,6 +6,7 @@ import 'package:pt_warung_madura_albertus_carlos/core/di/injection.dart' as di;
 import 'package:pt_warung_madura_albertus_carlos/features/auth/presentation/bloc/auth_bloc.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   di.init();
   runApp(const MainApp());
 }
@@ -17,7 +18,12 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => di.locator<AuthBloc>()),
+        BlocProvider(
+          create: (context) => di.locator<AuthBloc>()
+            ..add(
+              AuthenticationCheck(),
+            ),
+        ),
       ],
       child: MaterialApp.router(
         theme: CustomThemes.lightTheme,
