@@ -3,24 +3,30 @@ import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 
 class CustomInputField extends StatelessWidget {
   final TextEditingController controller;
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
   final TextInputType keyboardType;
   final String hintText;
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final String? Function(String?)? validator;
+  final void Function()? onTap;
   final bool obscureText;
+  final bool readOnly;
+  final void Function(String)? onChanged;
 
   const CustomInputField({
     super.key,
     required this.controller,
-    required this.focusNode,
+    this.focusNode,
     required this.keyboardType,
     required this.hintText,
     this.prefixIcon,
     this.suffixIcon,
     required this.validator,
     this.obscureText = false,
+    this.readOnly = false,
+    this.onTap,
+    this.onChanged,
   });
 
   @override
@@ -28,6 +34,7 @@ class CustomInputField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      readOnly: readOnly,
       focusNode: focusNode,
       cursorColor: Style.primaryColor,
       decoration: InputDecoration(
@@ -52,7 +59,9 @@ class CustomInputField extends StatelessWidget {
       ),
       obscureText: obscureText,
       obscuringCharacter: '*',
-      onTapOutside: (event) => focusNode.unfocus(),
+      onTap: onTap,
+      onChanged: onChanged,
+      onTapOutside: (event) => focusNode?.unfocus(),
       validator: validator,
     );
   }

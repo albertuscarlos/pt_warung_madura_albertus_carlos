@@ -4,6 +4,8 @@ import 'package:pt_warung_madura_albertus_carlos/config/routes.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/themes.dart';
 import 'package:pt_warung_madura_albertus_carlos/core/di/injection.dart' as di;
 import 'package:pt_warung_madura_albertus_carlos/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/home_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,12 @@ class MainApp extends StatelessWidget {
             ..add(
               AuthenticationCheck(),
             ),
+        ),
+        BlocProvider(
+          create: (context) => di.locator<HomeBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.locator<PostFormBloc>(),
         ),
       ],
       child: MaterialApp.router(

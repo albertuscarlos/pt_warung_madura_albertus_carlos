@@ -25,7 +25,6 @@ class AuthRepositoryImpl implements AuthRepository {
       final result = await authRemoteDatasource.login(
         loginBodyModels: loginBodyModels,
       );
-      log('Repo Impl Token: $result');
       await authLocalDatasource.setToken(token: result);
       return Right(result);
     } on DioException catch (e) {

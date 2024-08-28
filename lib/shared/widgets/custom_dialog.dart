@@ -28,7 +28,7 @@ class CustomDialog extends StatelessWidget {
             if (!isLoading)
               Text(
                 dialogTitle,
-                style: Style.testRubik.copyWith(
+                style: Style.rubikFont.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -45,7 +45,7 @@ class CustomDialog extends StatelessWidget {
             Text(
               dialogBody,
               textAlign: TextAlign.center,
-              style: Style.testRubik,
+              style: Style.rubikFont,
             ),
           ],
         ),

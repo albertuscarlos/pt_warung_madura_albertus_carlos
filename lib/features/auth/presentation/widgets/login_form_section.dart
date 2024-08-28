@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/auth/presentation/widgets/custom_input_field.dart';
+import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_input_field.dart';
 
 class LoginFormSection extends StatelessWidget {
   final GlobalKey<FormState> authKey;

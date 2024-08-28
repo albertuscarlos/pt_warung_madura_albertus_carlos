@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 
+///This custom elevated button can be used accros the UI
 class CustomElevatedButton extends StatelessWidget {
   final String btnText;
   final bool isWhiteBackground;
@@ -23,8 +24,9 @@ class CustomElevatedButton extends StatelessWidget {
         shape: isWhiteBackground
             ? WidgetStatePropertyAll(
                 RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Style.primaryColor)),
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Style.primaryColor),
+                ),
               )
             : null,
       ),

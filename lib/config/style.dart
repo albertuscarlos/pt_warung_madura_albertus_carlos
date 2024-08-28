@@ -42,12 +42,9 @@ class Style {
     leadingDistribution: TextLeadingDistribution.even,
   );
 
-  static const TextStyle testPoppins = TextStyle(
-    fontFamily: 'Poppins',
-    height: 1,
-  );
-  static const TextStyle testRubik = TextStyle(
+  static const TextStyle rubikFont = TextStyle(
     fontFamily: 'Rubik',
-    height: 1,
+    height: 1.200,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 }
