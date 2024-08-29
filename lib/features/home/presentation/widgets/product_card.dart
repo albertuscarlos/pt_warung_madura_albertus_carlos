@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/product_entities.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_elevated_button.dart';
 
 class ProductCard extends StatelessWidget {
@@ -40,6 +43,25 @@ class ProductCard extends StatelessWidget {
               image: NetworkImage(
                 product.pictureUrl,
               ),
+              errorBuilder: (context, error, stackTrace) {
+                return const ColoredBox(
+                  color: Style.backgroundColor,
+                  child: SizedBox(
+                    height: 165,
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Expanded(
@@ -67,19 +89,26 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 5),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Style.deleteBtnColor,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(
-                            'Delete',
-                            style: Style.rubikFont.copyWith(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: Style.secondaryColor,
+                      GestureDetector(
+                        onTap: () => context.read<ProductBloc>().add(
+                              DeleteSelectedProduct(
+                                productId: product.id,
+                              ),
+                            ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Style.deleteBtnColor,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              'Delete',
+                              style: Style.rubikFont.copyWith(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: Style.secondaryColor,
+                              ),
                             ),
                           ),
                         ),
@@ -105,7 +134,11 @@ class ProductCard extends StatelessWidget {
                     height: 40,
                     child: CustomElevatedButton(
                       btnText: '+ Add to Cart',
-                      onPressed: () {},
+                      onPressed: () {
+                        context.read<CartBloc>().add(
+                              AddProduct(productData: product),
+                            );
+                      },
                     ),
                   ),
                 ],

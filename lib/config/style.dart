@@ -10,6 +10,7 @@ class Style {
   static const counterBgColor = Color.fromRGBO(240, 243, 255, 1);
   static const counterBorderColor = Color.fromRGBO(219, 219, 219, 1);
   static const btnColor = Color.fromRGBO(0, 111, 253, 1);
+  static const dividerColor = Color.fromRGBO(217, 217, 217, 1);
   //TextField Color
   static const textFieldBorderColor = Color.fromRGBO(197, 198, 204, 1);
   static const textFieldIconColor = Color.fromRGBO(143, 144, 152, 1);
@@ -45,6 +46,13 @@ class Style {
   static const TextStyle rubikFont = TextStyle(
     fontFamily: 'Rubik',
     height: 1.200,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+  static const TextStyle poppinsFont = TextStyle(
+    fontFamily: 'Poppins',
+    height: 1.875,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
     leadingDistribution: TextLeadingDistribution.even,
   );
 }

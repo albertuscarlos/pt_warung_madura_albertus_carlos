@@ -1,0 +1,1 @@
+enum QuantityAction { increase, decrease }

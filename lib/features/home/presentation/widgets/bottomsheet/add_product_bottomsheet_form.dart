@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 import 'package:pt_warung_madura_albertus_carlos/core/helper/image_picker_helper.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/home_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_input_field.dart';
 
@@ -107,11 +107,18 @@ class AddProductBottomsheetForm extends StatelessWidget {
           },
         ),
         const SizedBox(height: 20),
-        BlocBuilder<HomeBloc, HomeState>(
+        BlocBuilder<ProductBloc, ProductState>(
           builder: (context, state) {
             List<CategoryData> categories = [];
             if (state is ProductLoaded) {
               categories = state.categoryEntities;
+            } else if (state is ProductDeleted) {
+              categories = state.categoryEntities;
+            } else if (state is ProductFailed<ProductLoaded>) {
+              final previousState = state.previousState;
+              if (previousState != null) {
+                categories = previousState.categoryEntities;
+              }
             }
             return DropdownButtonHideUnderline(
               child: ButtonTheme(

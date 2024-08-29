@@ -1,24 +1,30 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pt_warung_madura_albertus_carlos/core/constants/dummy_data.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/product_entities.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/delete_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/get_category.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/get_products.dart';
 
-part 'home_event.dart';
-part 'home_state.dart';
+part 'product_event.dart';
+part 'product_state.dart';
 
-class HomeBloc extends Bloc<HomeEvent, HomeState> {
+class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final GetCategory getCategory;
   final GetProducts getProducts;
-  HomeBloc({
+  final DeleteProduct deleteProduct;
+  ProductBloc({
     required this.getCategory,
     required this.getProducts,
+    required this.deleteProduct,
   }) : super(HomeInitial()) {
     on<LoadCategoryAndProduct>(
       (event, emit) async {
-        emit(ProductLoading(loadingPlaceholder: DummyData.categoryDummy));
+        emit(ProductLoading<CategoryEntities>(
+            loadingPlaceholder: DummyData.categoryDummy));
 
         final categoryResult = await getCategory.execute();
 
@@ -61,5 +67,53 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         );
       },
     );
+
+    on<DeleteSelectedProduct>((event, emit) async {
+      //Delete when state is product loaded
+      if (state is ProductLoaded) {
+        final currentState = state as ProductLoaded;
+
+        emit(ProductLoading<List<CategoryData>>(
+          loadingPlaceholder: currentState.categoryEntities,
+        ));
+
+        final request = await deleteProduct.execute(productId: event.productId);
+
+        request.fold(
+          (failed) => emit(
+            ProductFailed<ProductLoaded>(
+              message: failed.message,
+              previousState: currentState,
+            ),
+          ),
+          (success) => emit(
+            ProductDeleted(
+              categoryEntities: currentState.categoryEntities,
+              productEntities: currentState.productEntities,
+            ),
+          ),
+        );
+
+        //Delete when state is productfailed
+      } else if (state is ProductFailed<ProductLoaded>) {
+        log(event.productId);
+        final currentState = state as ProductFailed<ProductLoaded>;
+        emit(ProductLoading<List<CategoryData>>(
+          loadingPlaceholder: currentState.previousState?.categoryEntities,
+        ));
+
+        final result = await deleteProduct.execute(productId: event.productId);
+
+        result.fold((failed) {
+          emit(
+              currentState.copyWith(previousState: currentState.previousState));
+        }, (success) {
+          emit(ProductDeleted(
+            categoryEntities: currentState.previousState!.categoryEntities,
+            productEntities: currentState.previousState!.productEntities,
+          ));
+        });
+      }
+    });
   }
 }

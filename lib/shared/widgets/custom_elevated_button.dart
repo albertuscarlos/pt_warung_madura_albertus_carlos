@@ -6,11 +6,16 @@ class CustomElevatedButton extends StatelessWidget {
   final String btnText;
   final bool isWhiteBackground;
   final void Function() onPressed;
+  final bool isLoading;
+  final Widget? loadingBtn;
+
   const CustomElevatedButton({
     super.key,
     required this.btnText,
     this.isWhiteBackground = false,
     required this.onPressed,
+    this.isLoading = false,
+    this.loadingBtn,
   });
 
   @override
@@ -30,12 +35,16 @@ class CustomElevatedButton extends StatelessWidget {
               )
             : null,
       ),
-      child: Text(
-        btnText,
-        style: Style.buttonTextStyle.copyWith(
-          color: isWhiteBackground ? Style.primaryColor : Style.secondaryColor,
-        ),
-      ),
+      child: isLoading
+          ? loadingBtn
+          : Text(
+              btnText,
+              style: Style.buttonTextStyle.copyWith(
+                color: isWhiteBackground
+                    ? Style.primaryColor
+                    : Style.secondaryColor,
+              ),
+            ),
     );
   }
 }

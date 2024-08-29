@@ -60,7 +60,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<Either<Failure, void>> postCategory(
+  Future<Either<Failure, String>> postCategory(
       {required CategoryBodyEntities categoryBody}) async {
     try {
       final result =
@@ -85,11 +85,38 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<Either<Failure, void>> postProduct(
+  Future<Either<Failure, String>> postProduct(
       {required ProductBodyEntities productBody}) async {
     try {
       final result =
           await homeRemoteDatasource.postProduct(productBody: productBody);
+      return Right(result);
+    } on DioException catch (e) {
+      final error = e.response?.data;
+      if (e.type == DioExceptionType.connectionError) {
+        return const Left(
+          ConnectionFailure(
+            'No Internet connection!\nPlease check your internet connection and try again',
+          ),
+        );
+      } else if (e.response!.statusCode == 400) {
+        return Left(ServerFailure(error['message']));
+      } else if (e.response!.statusCode == 401) {
+        return const Left(ServerFailure('Unauthorized'));
+      } else {
+        return const Left(ServerFailure('Something went wrong in the server'));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> deleteProduct({
+    required String productId,
+  }) async {
+    try {
+      final result = await homeRemoteDatasource.deleteProduct(
+        productId: productId,
+      );
       return Right(result);
     } on DioException catch (e) {
       final error = e.response?.data;

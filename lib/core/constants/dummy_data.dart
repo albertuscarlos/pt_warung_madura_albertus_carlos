@@ -1,3 +1,4 @@
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/entities/cart_data.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/product_entities.dart';
 
@@ -27,6 +28,18 @@ class DummyData {
           ),
         );
       },
+    ),
+  );
+
+  static final List<CartData> cartDataDummy = List.generate(
+    1,
+    (index) => const CartData(
+      id: 1,
+      productId: '1',
+      name: 'Coconut',
+      price: 10000,
+      quantity: 1,
+      subTotal: 10000,
     ),
   );
 }

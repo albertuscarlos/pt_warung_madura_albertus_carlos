@@ -8,7 +8,7 @@ class PostCategory {
 
   PostCategory({required this.homeRepository});
 
-  Future<Either<Failure, void>> execute({
+  Future<Either<Failure, String>> execute({
     required CategoryBodyEntities categoryBody,
   }) {
     return homeRepository.postCategory(categoryBody: categoryBody);

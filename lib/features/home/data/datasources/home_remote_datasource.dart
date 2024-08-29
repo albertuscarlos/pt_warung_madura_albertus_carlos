@@ -9,8 +9,9 @@ import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/p
 abstract class HomeRemoteDatasource {
   Future<CategoryModel> getCategory();
   Future<ProductModel> getProduct();
-  Future<void> postCategory({required CategoryBodyEntities categoryBody});
-  Future<void> postProduct({required ProductBodyEntities productBody});
+  Future<String> postCategory({required CategoryBodyEntities categoryBody});
+  Future<String> postProduct({required ProductBodyEntities productBody});
+  Future<String> deleteProduct({required String productId});
 }
 
 class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
@@ -51,7 +52,7 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
   }
 
   @override
-  Future<void> postCategory({
+  Future<String> postCategory({
     required CategoryBodyEntities categoryBody,
   }) async {
     try {
@@ -59,7 +60,7 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
           await dio.post(Constants.categoryUrl, data: categoryBody.toJson());
 
       if (request.statusCode == 200) {
-        return Future.value(null);
+        return 'New category added!';
       } else {
         throw Exception();
       }
@@ -69,7 +70,7 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
   }
 
   @override
-  Future<void> postProduct({required ProductBodyEntities productBody}) async {
+  Future<String> postProduct({required ProductBodyEntities productBody}) async {
     try {
       final picture = productBody.productImage;
       if (picture != null) {
@@ -84,13 +85,32 @@ class HomeRemoteDatasourceImpl implements HomeRemoteDatasource {
           ),
         });
 
-        final request =
-            await dio.post(Constants.productsUrl, data: productData);
+        final request = await dio.post(
+          Constants.productsUrl,
+          data: productData,
+        );
         if (request.statusCode == 200) {
-          return Future.value(null);
+          return 'New product added!';
         } else {
           throw Exception();
         }
+      } else {
+        return 'Picture is required';
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> deleteProduct({required String productId}) async {
+    try {
+      final request = await dio.delete('${Constants.productsUrl}/$productId');
+
+      if (request.statusCode == 200) {
+        return 'Product deleted!';
+      } else {
+        throw Exception();
       }
     } catch (e) {
       rethrow;

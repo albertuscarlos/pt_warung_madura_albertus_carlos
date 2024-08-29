@@ -53,13 +53,21 @@ final class PostFillForm extends PostFormState {
 
 final class PostFormLoading extends PostFormState {}
 
-final class PostFormSuccess extends PostFormState {}
-
-final class PostFormFailed extends PostFormState {
+final class PostFormSuccess extends PostFormState {
   final String message;
 
-  const PostFormFailed({required this.message});
+  const PostFormSuccess({required this.message});
 
   @override
   List<Object> get props => [message];
+}
+
+final class PostFormFailed<T> extends PostFormState {
+  final String message;
+  final T previousState;
+
+  const PostFormFailed({required this.message, required this.previousState});
+
+  @override
+  List<Object> get props => [message, previousState ?? ''];
 }

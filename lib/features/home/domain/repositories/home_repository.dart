@@ -8,10 +8,11 @@ import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/p
 abstract class HomeRepository {
   Future<Either<Failure, CategoryEntities>> getCategory();
   Future<Either<Failure, ProductEntities>> getProducts();
-  Future<Either<Failure, void>> postCategory({
+  Future<Either<Failure, String>> postCategory({
     required CategoryBodyEntities categoryBody,
   });
-  Future<Either<Failure, void>> postProduct({
+  Future<Either<Failure, String>> postProduct({
     required ProductBodyEntities productBody,
   });
+  Future<Either<Failure, String>> deleteProduct({required String productId});
 }

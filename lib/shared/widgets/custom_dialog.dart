@@ -25,6 +25,7 @@ class CustomDialog extends StatelessWidget {
         padding: const EdgeInsets.all(36),
         child: Column(
           children: [
+            const SizedBox(height: 10),
             if (!isLoading)
               Text(
                 dialogTitle,
@@ -40,12 +41,12 @@ class CustomDialog extends StatelessWidget {
                 ),
               ),
             const SizedBox(
-              height: 50,
+              height: 30,
             ),
             Text(
               dialogBody,
               textAlign: TextAlign.center,
-              style: Style.rubikFont,
+              style: Style.poppinsFont,
             ),
           ],
         ),

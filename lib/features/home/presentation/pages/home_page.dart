@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/home_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/add_category_bottomsheet_form.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/add_product_bottomsheet_form.dart';
@@ -16,7 +18,10 @@ import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widg
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/floating_cart_button.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_appbar.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_dialog.dart';
+import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_elevated_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,7 +42,7 @@ class _HomePageState extends State<HomePage> {
 
   void _fetchHomePageData() {
     Future.microtask(
-      () => context.read<HomeBloc>().add(
+      () => context.read<ProductBloc>().add(
             LoadCategoryAndProduct(),
           ),
     );
@@ -80,47 +85,111 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PostFormBloc, PostFormState>(
-      listener: (context, state) {
-        if (state is PostFormSuccess) {
-          context.pop();
-          _fetchHomePageData();
-          context.read<PostFormBloc>().add(ClearState());
-          productImageController.clear();
-          priceController.clear();
-          productNameController.clear();
-          context.pop();
-        } else if (state is PostFormFailed) {
-          context.pop();
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              return CustomDialog(
-                dialogTitle: 'Submit Failed',
-                dialogBody: state.message,
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<PostFormBloc, PostFormState>(
+          listener: (context, state) {
+            if (state is PostFormSuccess) {
+              context.pop();
+              _fetchHomePageData();
+              context.read<PostFormBloc>().add(ClearState());
+              productImageController.clear();
+              priceController.clear();
+              productNameController.clear();
+              categoryNameController.clear();
+              context.pop();
+              showTopSnackBar(
+                displayDuration: const Duration(seconds: 1),
+                Overlay.of(context),
+                CustomSnackBar.success(message: state.message),
               );
-            },
-          );
-        } else if (state is PostFormLoading) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              return const CustomDialog(
-                isLoading: true,
-                dialogBody: 'Loading...',
+            } else if (state is PostFormFailed) {
+              context.pop();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return CustomDialog(
+                    dialogTitle: 'Submit Failed',
+                    dialogBody: state.message,
+                  );
+                },
               );
-            },
-          );
-        } else if (state is PostFillForm) {
-          productImageController.text =
-              state.productImage?.path.split('/').last ?? '';
-        } else {
-          productNameController.clear();
-          priceController.clear();
-        }
-      },
+            } else if (state is PostFormLoading) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) {
+                  return const CustomDialog(
+                    isLoading: true,
+                    dialogBody: 'Loading...',
+                  );
+                },
+              );
+            } else if (state is PostFillForm) {
+              productImageController.text =
+                  state.productImage?.path.split('/').last ?? '';
+            } else {
+              productNameController.clear();
+              priceController.clear();
+              categoryNameController.clear();
+            }
+          },
+        ),
+        BlocListener<ProductBloc, ProductState>(
+          listener: (context, state) {
+            if (state is ProductFailed<ProductLoaded>) {
+              context.pop();
+              showTopSnackBar(
+                displayDuration: const Duration(seconds: 1),
+                Overlay.of(context),
+                CustomSnackBar.error(message: state.message),
+              );
+            } else if (state is ProductDeleted) {
+              context.pop();
+              showTopSnackBar(
+                displayDuration: const Duration(seconds: 1),
+                Overlay.of(context),
+                const CustomSnackBar.success(message: 'Delete Product Success'),
+              );
+              _fetchHomePageData();
+            } else if (state is ProductLoading<List<CategoryData>>) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) {
+                  return const CustomDialog(
+                    isLoading: true,
+                    dialogBody: 'Loading...',
+                  );
+                },
+              );
+            }
+          },
+        ),
+        BlocListener<CartBloc, CartState>(
+          listener: (context, state) {
+            if (state is HomeCartLoading) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) {
+                  return const CustomDialog(
+                    isLoading: true,
+                    dialogBody: 'Loading...',
+                  );
+                },
+              );
+            } else if (state is CartSuccess) {
+              context.pop();
+              showTopSnackBar(
+                displayDuration: const Duration(seconds: 1),
+                Overlay.of(context),
+                const CustomSnackBar.success(message: 'Added to cart.'),
+              );
+            }
+          },
+        )
+      ],
       child: Scaffold(
         body: SafeArea(
           child: Stack(
@@ -130,31 +199,45 @@ class _HomePageState extends State<HomePage> {
                 child: CustomScrollView(
                   slivers: [
                     const CustomAppbar(appbarTitle: 'MASPOS'),
-                    BlocBuilder<HomeBloc, HomeState>(
+                    BlocBuilder<ProductBloc, ProductState>(
                       builder: (context, state) {
-                        if (state is ProductLoaded) {
-                          final categories = state.categoryEntities;
-                          return SliverList.separated(
-                            itemCount: categories.length,
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-                              final products = category.productByCategory;
+                        //define variable for state
+                        List<CategoryData> categories = [];
+                        String? message;
+                        bool? isSkeletonEnabled;
 
-                              return CategorySection(
-                                categoryData: category,
-                                products: products,
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(
-                                height: 30,
-                              );
-                            },
-                          );
-                        } else if (state is ProductLoading) {
-                          final categories =
-                              state.loadingPlaceholder.categories;
+                        //fill variable from the product state
+                        if (state is ProductLoaded) {
+                          categories = state.categoryEntities;
+                        } else if (state is ProductDeleted) {
+                          categories = state.categoryEntities;
+                        } else if (state
+                            is ProductLoading<List<CategoryData>>) {
+                          final placeholder = state.loadingPlaceholder;
+                          if (placeholder != null) {
+                            categories = placeholder;
+                          }
+                        } else if (state is ProductLoading<CategoryEntities>) {
+                          final placeholder = state.loadingPlaceholder;
+                          if (placeholder != null) {
+                            categories = placeholder.categories;
+                            isSkeletonEnabled = true;
+                          }
+                        } else if (state is ProductFailed<ProductLoaded>) {
+                          final previousState = state.previousState;
+                          if (previousState != null) {
+                            categories = previousState.categoryEntities;
+                          } else {
+                            message = state.message;
+                          }
+                        } else if (state is ProductFailed) {
+                          message = state.message;
+                        }
+
+                        //build the UI
+                        if (categories.isNotEmpty) {
                           return Skeletonizer.sliver(
+                            enabled: isSkeletonEnabled ?? false,
                             containersColor: Style.secondaryColor,
                             child: SliverList.separated(
                               itemCount: categories.length,
@@ -174,11 +257,28 @@ class _HomePageState extends State<HomePage> {
                               },
                             ),
                           );
-                        } else if (state is ProductFailed) {
+                        } else if (message != null) {
                           return SliverToBoxAdapter(
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(state.message),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height / 4,
+                                ),
+                                Text(
+                                  message,
+                                  textAlign: TextAlign.center,
+                                  style: Style.rubikFont,
+                                ),
+                                const SizedBox(height: 40),
+                                CustomElevatedButton(
+                                  btnText: 'Try Again',
+                                  onPressed: () {
+                                    _fetchHomePageData();
+                                  },
+                                ),
                               ],
                             ),
                           );
@@ -200,11 +300,13 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FloatingCartButton(
-                    onPressed: () {},
+                    onPressed: () => context.pushNamed('cart_page'),
                   ),
                   const SizedBox(height: 15),
                   BottomMenuSection(
-                    onAddCategory: () {
+                    topButtonLabel: '+ Add Category',
+                    bottomButtonLabel: '+ Add Product',
+                    onPressedTopButton: () {
                       context.read<PostFormBloc>().add(FillForm());
                       showBarModalBottomSheet(
                         context: context,
@@ -242,7 +344,7 @@ class _HomePageState extends State<HomePage> {
                         },
                       );
                     },
-                    onAddProducts: () {
+                    onPressedBottomButton: () {
                       context.read<PostFormBloc>().add(FillForm());
                       showBarModalBottomSheet(
                         context: context,

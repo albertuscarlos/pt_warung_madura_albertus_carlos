@@ -8,7 +8,7 @@ class PostProduct {
 
   PostProduct({required this.homeRepository});
 
-  Future<Either<Failure, void>> execute({
+  Future<Either<Failure, String>> execute({
     required ProductBodyEntities productBody,
   }) {
     return homeRepository.postProduct(productBody: productBody);

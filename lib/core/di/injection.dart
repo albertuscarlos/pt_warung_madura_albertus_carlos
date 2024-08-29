@@ -10,14 +10,24 @@ import 'package:pt_warung_madura_albertus_carlos/features/auth/domain/usecases/g
 import 'package:pt_warung_madura_albertus_carlos/features/auth/domain/usecases/logout.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/auth/domain/usecases/post_login.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/data/datasources/cart_local_datasource.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/data/datasources/db/database_helper.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/repositories/cart_repository.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/add_product_to_cart.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/delete_cart_product.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/get_cart_product.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/update_cart_product.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/data/datasources/home_remote_datasource.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/data/repositories/home_repository_impl.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/repositories/home_repository.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/delete_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/get_category.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/get_products.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/post_category.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/post_product.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/home_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,15 +44,26 @@ void init() {
     ),
   );
   locator.registerFactory(
-    () => HomeBloc(
+    () => ProductBloc(
       getCategory: locator(),
       getProducts: locator(),
+      deleteProduct: locator(),
     ),
   );
-  locator.registerFactory(() => PostFormBloc(
-        postProduct: locator(),
-        postCategory: locator(),
-      ));
+  locator.registerFactory(
+    () => PostFormBloc(
+      postProduct: locator(),
+      postCategory: locator(),
+    ),
+  );
+  locator.registerFactory(
+    () => CartBloc(
+      addProductToCart: locator(),
+      getCartProduct: locator(),
+      updateCartProduct: locator(),
+      deleteCartProduct: locator(),
+    ),
+  );
 
   //UseCase Section
   //Auth
@@ -54,6 +75,16 @@ void init() {
   locator.registerLazySingleton(() => GetProducts(homeRepository: locator()));
   locator.registerLazySingleton(() => PostCategory(homeRepository: locator()));
   locator.registerLazySingleton(() => PostProduct(homeRepository: locator()));
+  locator.registerLazySingleton(() => DeleteProduct(homeRepository: locator()));
+  //Cart
+  locator
+      .registerLazySingleton(() => AddProductToCart(cartRepository: locator()));
+  locator
+      .registerLazySingleton(() => GetCartProduct(cartRepository: locator()));
+  locator.registerLazySingleton(
+      () => UpdateCartProduct(cartRepository: locator()));
+  locator.registerLazySingleton(
+      () => DeleteCartProduct(cartRepository: locator()));
 
   //Repository
   //Auth
@@ -63,9 +94,16 @@ void init() {
       authLocalDatasource: locator(),
     ),
   );
+  //Home
   locator.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(
       homeRemoteDatasource: locator(),
+    ),
+  );
+  //Cart
+  locator.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(
+      cartLocalDatasource: locator(),
     ),
   );
 
@@ -85,6 +123,11 @@ void init() {
       dioInterceptor: locator(),
     ),
   );
+  locator.registerLazySingleton<CartLocalDatasource>(
+    () => CartLocalDatasourceImpl(
+      databaseHelper: locator(),
+    ),
+  );
 
   //External
   locator.registerLazySingleton<Dio>(() => Dio());
@@ -101,4 +144,5 @@ void init() {
       authSharedPreferenceHelper: locator(),
     ),
   );
+  locator.registerLazySingleton(() => DatabaseHelper());
 }

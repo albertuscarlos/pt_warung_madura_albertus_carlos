@@ -501,6 +501,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sqflite:
+    dependency: "direct main"
+    description:
+      name: sqflite
+      sha256: a43e5a27235518c03ca238e7b4732cf35eabe863a369ceba6cbefa537a66f16d
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.3+1"
+  sqflite_common:
+    dependency: transitive
+    description:
+      name: sqflite_common
+      sha256: "3da423ce7baf868be70e2c0976c28a1bb2f73644268b7ffa7d2e08eab71f16a4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.4"
   stack_trace:
     dependency: transitive
     description:
@@ -525,6 +541,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  synchronized:
+    dependency: transitive
+    description:
+      name: synchronized
+      sha256: "539ef412b170d65ecdafd780f924e5be3f60032a1128df156adad6c5b373d558"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0+1"
   term_glyph:
     dependency: transitive
     description:
@@ -541,6 +565,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.0"
+  top_snackbar_flutter:
+    dependency: "direct main"
+    description:
+      name: top_snackbar_flutter
+      sha256: "22d14664a13db6ac714934c3382bd8d4daa57fb888a672f922df71981c5a5cb2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   typed_data:
     dependency: transitive
     description:

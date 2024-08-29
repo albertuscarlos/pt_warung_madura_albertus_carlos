@@ -4,7 +4,8 @@ import 'package:pt_warung_madura_albertus_carlos/config/routes.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/themes.dart';
 import 'package:pt_warung_madura_albertus_carlos/core/di/injection.dart' as di;
 import 'package:pt_warung_madura_albertus_carlos/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/home_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
 
 void main() {
@@ -27,10 +28,13 @@ class MainApp extends StatelessWidget {
             ),
         ),
         BlocProvider(
-          create: (context) => di.locator<HomeBloc>(),
+          create: (context) => di.locator<ProductBloc>(),
         ),
         BlocProvider(
           create: (context) => di.locator<PostFormBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.locator<CartBloc>(),
         ),
       ],
       child: MaterialApp.router(

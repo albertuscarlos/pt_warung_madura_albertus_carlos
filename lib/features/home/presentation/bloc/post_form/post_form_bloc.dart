@@ -37,8 +37,15 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         final currentState = state as PostFillForm;
 
         emit(currentState.copyWith(categoryName: event.categoryName));
+      } else if (state is PostFormFailed<PostFillForm>) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        emit(currentState.previousState.copyWith(
+          categoryName: event.categoryName,
+        ));
       }
     });
+
     on<PostFilledCategory>((event, emit) async {
       if (state is PostFillForm) {
         final currentState = state as PostFillForm;
@@ -51,8 +58,32 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         );
 
         request.fold(
-          (failed) => emit(PostFormFailed(message: failed.message)),
-          (success) => emit(PostFormSuccess()),
+          (failed) {
+            emit(PostFormFailed(
+              message: failed.message,
+              previousState: currentState,
+            ));
+          },
+          (success) => emit(PostFormSuccess(message: success)),
+        );
+      } else if (state is PostFormFailed<PostFillForm>) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+        emit(PostFormLoading());
+
+        final request = await postCategory.execute(
+          categoryBody: CategoryBodyEntities(
+            categoryName: currentState.previousState.categoryName ?? '',
+          ),
+        );
+
+        request.fold(
+          (failed) {
+            emit(PostFormFailed(
+              message: failed.message,
+              previousState: currentState.previousState,
+            ));
+          },
+          (success) => emit(PostFormSuccess(message: success)),
         );
       }
     });
@@ -75,8 +106,32 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         );
 
         result.fold(
-          (failure) => emit(PostFormFailed(message: failure.message)),
-          (success) => emit(PostFormSuccess()),
+          (failure) => emit(PostFormFailed(
+            message: failure.message,
+            previousState: currentState,
+          )),
+          (success) => emit(PostFormSuccess(message: success)),
+        );
+      } else if (state is PostFormFailed<PostFillForm>) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        emit(PostFormLoading());
+
+        final result = await postProduct.execute(
+          productBody: ProductBodyEntities(
+            productImage: currentState.previousState.productImage,
+            productName: currentState.previousState.productName,
+            price: currentState.previousState.price,
+            category: currentState.previousState.category,
+          ),
+        );
+
+        result.fold(
+          (failure) => emit(PostFormFailed(
+            message: failure.message,
+            previousState: currentState.previousState,
+          )),
+          (success) => emit(PostFormSuccess(message: success)),
         );
       }
     });
@@ -85,6 +140,11 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         final currentState = state as PostFillForm;
 
         emit(currentState.copyWith(productImage: event.productImage));
+      } else if (state is PostFormFailed) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        emit(currentState.previousState
+            .copyWith(productImage: event.productImage));
       }
     });
     on<FillProductName>((event, emit) {
@@ -92,6 +152,11 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         final currentState = state as PostFillForm;
 
         emit(currentState.copyWith(productName: event.productName));
+      } else if (state is PostFormFailed) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        emit(currentState.previousState
+            .copyWith(productName: event.productName));
       }
     });
     on<FillProductPrice>((event, emit) {
@@ -101,6 +166,13 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
         final parsePrice = num.parse(event.price);
 
         emit(currentState.copyWith(price: parsePrice));
+      } else if (state is PostFormFailed) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        final parsePrice = num.parse(event.price);
+        emit(currentState.previousState.copyWith(
+          price: parsePrice,
+        ));
       }
     });
     on<FillProductCategory>((event, emit) {
@@ -109,6 +181,15 @@ class PostFormBloc extends Bloc<PostFormEvent, PostFormState> {
 
         emit(
           currentState.copyWith(
+            category: event.category,
+            categoryName: event.categoryName,
+          ),
+        );
+      } else if (state is PostFormFailed) {
+        final currentState = state as PostFormFailed<PostFillForm>;
+
+        emit(
+          currentState.previousState.copyWith(
             category: event.category,
             categoryName: event.categoryName,
           ),
