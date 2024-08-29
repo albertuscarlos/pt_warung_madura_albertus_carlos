@@ -15,6 +15,7 @@ import 'package:pt_warung_madura_albertus_carlos/features/cart/data/datasources/
 import 'package:pt_warung_madura_albertus_carlos/features/cart/data/repositories/cart_repository_impl.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/repositories/cart_repository.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/add_product_to_cart.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/delete_all_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/delete_cart_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/get_cart_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/update_cart_product.dart';
@@ -58,11 +59,11 @@ void init() {
   );
   locator.registerFactory(
     () => CartBloc(
-      addProductToCart: locator(),
-      getCartProduct: locator(),
-      updateCartProduct: locator(),
-      deleteCartProduct: locator(),
-    ),
+        addProductToCart: locator(),
+        getCartProduct: locator(),
+        updateCartProduct: locator(),
+        deleteCartProduct: locator(),
+        deleteAllProduct: locator()),
   );
 
   //UseCase Section
@@ -85,6 +86,8 @@ void init() {
       () => UpdateCartProduct(cartRepository: locator()));
   locator.registerLazySingleton(
       () => DeleteCartProduct(cartRepository: locator()));
+  locator
+      .registerLazySingleton(() => DeleteAllProduct(cartRepository: locator()));
 
   //Repository
   //Auth

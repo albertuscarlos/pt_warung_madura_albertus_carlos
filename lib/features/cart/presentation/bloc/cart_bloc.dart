@@ -8,6 +8,7 @@ import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/entities/c
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/entities/cart_data.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/entities/update_cart_body.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/add_product_to_cart.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/delete_all_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/delete_cart_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/get_cart_product.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/usecases/update_cart_product.dart';
@@ -21,11 +22,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   final GetCartProduct getCartProduct;
   final UpdateCartProduct updateCartProduct;
   final DeleteCartProduct deleteCartProduct;
+  final DeleteAllProduct deleteAllProduct;
   CartBloc({
     required this.addProductToCart,
     required this.getCartProduct,
     required this.deleteCartProduct,
     required this.updateCartProduct,
+    required this.deleteAllProduct,
   }) : super(CartInitial()) {
     on<AddProduct>((event, emit) async {
       emit(HomeCartLoading());
@@ -183,6 +186,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           });
         });
       }
+    });
+    on<PayBill>((event, emit) async {
+      final result = await deleteAllProduct.execute();
+
+      result.fold((failed) {
+        emit(CartFailed(message: failed.message));
+      }, (success) {
+        emit(PayBillLoading());
+      });
     });
   }
 }

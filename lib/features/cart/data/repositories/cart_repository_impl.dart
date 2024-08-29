@@ -72,4 +72,18 @@ class CartRepositoryImpl implements CartRepository {
       );
     }
   }
+
+  @override
+  Future<Either<Failure, String>> deleteAllProduct() async {
+    try {
+      final result = await cartLocalDatasource.deleteAllProduct();
+      return Right(result);
+    } on DatabaseException {
+      return const Left(
+        DatabaseFailure(
+          'Something went wrong when deleting product',
+        ),
+      );
+    }
+  }
 }

@@ -11,6 +11,8 @@ class CartInitial extends CartState {}
 
 class HomeCartLoading extends CartState {}
 
+class PayBillLoading extends CartState {}
+
 class CartLoading extends CartState {
   final List<CartData> placeholder;
 
@@ -49,3 +51,5 @@ class CartLoaded extends CartState {
   @override
   List<Object> get props => [cartData, total];
 }
+
+class PayBillSuccess {}

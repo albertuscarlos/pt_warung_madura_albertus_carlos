@@ -57,6 +57,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 //emit success state
                 emit(
                   ProductLoaded(
+                    searchCategory: categoryWithProduct,
                     categoryEntities: categoryWithProduct,
                     productEntities: productSuccess.products,
                   ),
@@ -113,6 +114,37 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             productEntities: currentState.previousState!.productEntities,
           ));
         });
+      }
+    });
+
+    on<SearchProduct>((event, emit) async {
+      if (state is ProductLoaded) {
+        final currentState = state as ProductLoaded;
+
+        //search product
+        final searchCategory = currentState.searchCategory.map((elements) {
+          final data = elements.productByCategory!
+              .where((data) => data.name
+                  .toLowerCase()
+                  .contains(event.searchKeyword.toLowerCase()))
+              .toList();
+
+          return elements.copyWith(productByCategory: data);
+        }).toList();
+
+        //filter if searched product is null
+        final categories = searchCategory.where((data) {
+          final products = data.productByCategory;
+          return products != null && products.isNotEmpty;
+        }).toList();
+
+        //if search keyword is not null emit filtered
+        emit(
+          currentState.copyWith(
+            categoryEntities:
+                event.searchKeyword != '' ? categories : searchCategory,
+          ),
+        );
       }
     });
   }

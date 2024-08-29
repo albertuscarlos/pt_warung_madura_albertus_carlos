@@ -17,3 +17,12 @@ final class DeleteSelectedProduct extends ProductEvent {
   @override
   List<Object> get props => [productId];
 }
+
+final class SearchProduct extends ProductEvent {
+  final String searchKeyword;
+
+  const SearchProduct({required this.searchKeyword});
+
+  @override
+  List<Object> get props => [searchKeyword];
+}

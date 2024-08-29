@@ -87,4 +87,14 @@ class DatabaseHelper {
       return null;
     }
   }
+
+  Future<int?> deleteAllProduct() async {
+    final db = await database;
+    if (db != null) {
+      final query = db.delete(_cartTable);
+      return query;
+    } else {
+      return null;
+    }
+  }
 }

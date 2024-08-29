@@ -19,16 +19,26 @@ final class ProductLoading<T> extends ProductState {
 }
 
 final class ProductLoaded<T> extends ProductState {
+  final List<CategoryData> searchCategory;
   final List<CategoryData> categoryEntities;
   final List<ProductData> productEntities;
 
   const ProductLoaded({
+    required this.searchCategory,
     required this.categoryEntities,
     required this.productEntities,
   });
 
+  ProductLoaded copyWith({List<CategoryData>? categoryEntities}) {
+    return ProductLoaded(
+      searchCategory: searchCategory,
+      categoryEntities: categoryEntities ?? this.categoryEntities,
+      productEntities: productEntities,
+    );
+  }
+
   @override
-  List<Object> get props => [productEntities];
+  List<Object> get props => [productEntities, categoryEntities, searchCategory];
 }
 
 final class ProductDeleted<T> extends ProductState {

@@ -48,3 +48,5 @@ final class UpdateProductQuantity extends CartEvent {
   @override
   List<Object> get props => [cartData, action];
 }
+
+final class PayBill extends CartEvent {}

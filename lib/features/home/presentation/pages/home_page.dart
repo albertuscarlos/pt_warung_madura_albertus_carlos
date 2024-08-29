@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +17,7 @@ import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widg
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_appbar.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_dialog.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_elevated_button.dart';
+import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_searchbar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -35,10 +34,13 @@ class _HomePageState extends State<HomePage> {
       productImageController,
       productNameController,
       priceController,
-      productCategoryController;
-  late FocusNode categoryNameFocus, productNameFocus, priceFocus;
+      productCategoryController,
+      searchController;
+
+  late FocusNode categoryNameFocus, productNameFocus, priceFocus, searchFocus;
   final GlobalKey<FormState> addCategoryFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> addProductFormKey = GlobalKey<FormState>();
+  final ValueNotifier<bool> showSearchButton = ValueNotifier(false);
 
   void _fetchHomePageData() {
     Future.microtask(
@@ -60,11 +62,13 @@ class _HomePageState extends State<HomePage> {
     productNameController = TextEditingController();
     priceController = TextEditingController();
     productCategoryController = TextEditingController();
+    searchController = TextEditingController();
 
     //initialize focus
     categoryNameFocus = FocusNode();
     productNameFocus = FocusNode();
     priceFocus = FocusNode();
+    searchFocus = FocusNode();
   }
 
   @override
@@ -76,11 +80,13 @@ class _HomePageState extends State<HomePage> {
     productNameController.dispose();
     priceController.dispose();
     productCategoryController.dispose();
+    searchController.dispose();
 
     //dispose focus
     categoryNameFocus.dispose();
     productNameFocus.dispose();
     priceFocus.dispose();
+    searchFocus.dispose();
   }
 
   @override
@@ -186,11 +192,21 @@ class _HomePageState extends State<HomePage> {
                 Overlay.of(context),
                 const CustomSnackBar.success(message: 'Added to cart.'),
               );
+            } else if (state is CartFailed) {
+              context.pop();
+              showTopSnackBar(
+                displayDuration: const Duration(seconds: 1),
+                Overlay.of(context),
+                const CustomSnackBar.error(
+                  message: 'Failed add product to cart.',
+                ),
+              );
             }
           },
         )
       ],
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Stack(
             children: [
@@ -198,7 +214,61 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: CustomScrollView(
                   slivers: [
-                    const CustomAppbar(appbarTitle: 'MASPOS'),
+                    ValueListenableBuilder(
+                      valueListenable: showSearchButton,
+                      builder: (context, value, child) {
+                        return CustomAppbar(
+                          appbarTitle: 'MASPOS',
+                          isSuffixTapped: value,
+                          onTapSuffix: () {
+                            showSearchButton.value = !showSearchButton.value;
+                          },
+                        );
+                      },
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: showSearchButton,
+                      builder: (context, searchButton, child) {
+                        if (searchButton == true) {
+                          return SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                CustomSearchBar(
+                                  controller: searchController,
+                                  focusNode: searchFocus,
+                                  onChanged: (valuie) {
+                                    context.read<ProductBloc>().add(
+                                        SearchProduct(searchKeyword: valuie));
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return const SliverToBoxAdapter(child: SizedBox());
+                        }
+                      },
+                    ),
+                    // const SliverToBoxAdapter(
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.end,
+                    //     children: [
+                    //       Icon(
+                    //         Icons.filter_alt_outlined,
+                    //         color: Style.textFieldBorderColor,
+                    //         size: 30,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // const SliverToBoxAdapter(
+                    //   child: SizedBox(
+                    //     height: 10,
+                    //   ),
+                    // ),
                     BlocBuilder<ProductBloc, ProductState>(
                       builder: (context, state) {
                         //define variable for state

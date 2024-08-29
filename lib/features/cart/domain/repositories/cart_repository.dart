@@ -15,4 +15,5 @@ abstract class CartRepository {
   Future<Either<Failure, String>> deleteCartProduct({
     required String productId,
   });
+  Future<Either<Failure, String>> deleteAllProduct();
 }

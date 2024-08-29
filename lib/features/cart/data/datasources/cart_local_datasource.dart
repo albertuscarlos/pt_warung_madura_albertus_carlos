@@ -11,6 +11,7 @@ abstract class CartLocalDatasource {
   Future<String> addProductToCart({required CartBody cartBody});
   Future<String> updateCartProduct({required UpdateCartBody updateCartBody});
   Future<String> deleteCartProduct({required String productId});
+  Future<String> deleteAllProduct();
 }
 
 class CartLocalDatasourceImpl implements CartLocalDatasource {
@@ -57,6 +58,16 @@ class CartLocalDatasourceImpl implements CartLocalDatasource {
       await databaseHelper.updateCartProduct(updateCartBody: updateCartBody);
 
       return 'Product Updated';
+    } catch (e) {
+      throw DatabaseException('Something went wrong');
+    }
+  }
+
+  @override
+  Future<String> deleteAllProduct() async {
+    try {
+      await databaseHelper.deleteAllProduct();
+      return 'All product deleted';
     } catch (e) {
       throw DatabaseException('Something went wrong');
     }
