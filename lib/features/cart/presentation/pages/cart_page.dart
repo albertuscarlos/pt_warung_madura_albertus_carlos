@@ -50,6 +50,7 @@ class _CartPageState extends State<CartPage> {
                     const CustomAppbar(
                       appbarTitle: 'Cart',
                       showSuffixIcon: false,
+                      isShowDrawer: false,
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     BlocBuilder<CartBloc, CartState>(

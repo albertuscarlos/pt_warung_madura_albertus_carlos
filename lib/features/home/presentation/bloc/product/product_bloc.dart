@@ -58,6 +58,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 //emit success state
                 emit(
                   ProductLoaded(
+                    products: categoryWithProduct,
                     searchCategory: categoryWithProduct,
                     categoryEntities: categoryWithProduct,
                     productEntities: productSuccess.products,
@@ -140,12 +141,21 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }).toList();
 
         //if search keyword is not null emit filtered
-        emit(
-          currentState.copyWith(
-            categoryEntities:
-                event.searchKeyword != '' ? categories : searchCategory,
-          ),
-        );
+        if (event.searchKeyword != '') {
+          emit(
+            currentState.copyWith(
+              categoryEntities:
+                  event.searchKeyword != '' ? categories : searchCategory,
+            ),
+          );
+        } else if (event.searchKeyword == '') {
+          emit(
+            currentState.copyWith(
+              categoryEntities: currentState.products,
+              filterOption: FilterOption.oldestProduct,
+            ),
+          );
+        }
       }
     });
 
@@ -154,6 +164,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final currentState = state as ProductLoaded;
 
         List<CategoryData> sortedCategories;
+        FilterOption? filterOption;
 
         if (event.filterOption == FilterOption.newestProduct) {
           sortedCategories = currentState.categoryEntities.map((category) {
@@ -162,6 +173,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                   ..sort((b, a) => a.createdAt.compareTo(b.createdAt));
             return category.copyWith(productByCategory: sortedProducts);
           }).toList();
+          filterOption = FilterOption.newestProduct;
         } else {
           sortedCategories = currentState.categoryEntities.map((category) {
             final sortedProducts =
@@ -169,11 +181,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                   ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
             return category.copyWith(productByCategory: sortedProducts);
           }).toList();
+          filterOption = FilterOption.oldestProduct;
         }
 
         emit(
           currentState.copyWith(
             categoryEntities: sortedCategories,
+            searchCategory: sortedCategories,
+            filterOption: filterOption,
           ),
         );
       }

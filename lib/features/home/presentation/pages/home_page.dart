@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
+import 'package:pt_warung_madura_albertus_carlos/core/utils/app_enum.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
@@ -39,6 +40,8 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<FormState> addProductFormKey = GlobalKey<FormState>();
   final ValueNotifier<bool> showSearchButton = ValueNotifier(false);
   final ValueNotifier<bool> showFilterOption = ValueNotifier(false);
+  final ValueNotifier<bool> onTapNewestProduct = ValueNotifier(false);
+  final ValueNotifier<bool> onTapOldestProduct = ValueNotifier(false);
 
   void _fetchHomePageData() {
     Future.microtask(
@@ -124,6 +127,14 @@ class _HomePageState extends State<HomePage> {
           );
         },
       );
+    } else if (state is ProductLoaded) {
+      if (state.filterOption == FilterOption.newestProduct) {
+        onTapNewestProduct.value = true;
+        onTapOldestProduct.value = false;
+      } else if (state.filterOption == FilterOption.oldestProduct) {
+        onTapNewestProduct.value = false;
+        onTapOldestProduct.value = true;
+      }
     }
   }
 
@@ -219,167 +230,174 @@ class _HomePageState extends State<HomePage> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
-                child: CustomScrollView(
-                  slivers: [
-                    ValueListenableBuilder(
-                      valueListenable: showSearchButton,
-                      builder: (context, value, child) {
-                        return CustomAppbar(
-                          appbarTitle: 'MASPOS',
-                          isSuffixTapped: value,
-                          onTapSuffix: () {
-                            showSearchButton.value = !showSearchButton.value;
-                            showFilterOption.value = false;
-                            context.read<ProductBloc>().add(
-                                  SearchProduct(
-                                    searchKeyword: searchController.text = '',
-                                  ),
-                                );
-                          },
-                          onTapFilter: () {
-                            showFilterOption.value = !showFilterOption.value;
-                            context.read<ProductBloc>().add(
-                                  SearchProduct(
-                                    searchKeyword: searchController.text = '',
-                                  ),
-                                );
-                            showSearchButton.value = false;
-                          },
-                        );
-                      },
-                    ),
-                    //handle state change when search button tapped
-                    ValueListenableBuilder(
-                      valueListenable: showSearchButton,
-                      builder: (context, searchButton, child) {
-                        if (searchButton == true) {
-                          return SliverToBoxAdapter(
-                            child: Column(
-                              children: [
-                                CustomSearchBar(
-                                  controller: searchController,
-                                  focusNode: searchFocus,
-                                  onChanged: (valuie) {
-                                    context.read<ProductBloc>().add(
-                                        SearchProduct(searchKeyword: valuie));
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                              ],
-                            ),
+                child: RefreshIndicator(
+                  onRefresh: () async => _fetchHomePageData(),
+                  child: CustomScrollView(
+                    slivers: [
+                      ValueListenableBuilder(
+                        valueListenable: showSearchButton,
+                        builder: (context, value, child) {
+                          return CustomAppbar(
+                            appbarTitle: 'MASPOS',
+                            isSuffixTapped: value,
+                            onTapSuffix: () {
+                              showSearchButton.value = !showSearchButton.value;
+                              // showFilterOption.value = false;
+                              context.read<ProductBloc>().add(
+                                    SearchProduct(
+                                      searchKeyword: searchController.text = '',
+                                    ),
+                                  );
+                            },
+                            onTapFilter: () {
+                              showFilterOption.value = !showFilterOption.value;
+                              context.read<ProductBloc>().add(
+                                    SearchProduct(
+                                      searchKeyword: searchController.text = '',
+                                    ),
+                                  );
+                              // showSearchButton.value = false;
+                            },
                           );
-                        } else {
-                          return const SliverToBoxAdapter(child: SizedBox());
-                        }
-                      },
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: showFilterOption,
-                      builder: (context, value, child) {
-                        if (value == true) {
-                          return FliterList();
-                        } else {
-                          return const SliverToBoxAdapter(child: SizedBox());
-                        }
-                      },
-                    ),
-                    BlocBuilder<ProductBloc, ProductState>(
-                      builder: (context, state) {
-                        //define variable for state
-                        List<CategoryData> categories = [];
-                        String? message;
-                        bool? isSkeletonEnabled;
-
-                        //fill variable from the product state
-                        if (state is ProductLoaded) {
-                          categories = state.categoryEntities;
-                        } else if (state is ProductDeleted) {
-                          categories = state.categoryEntities;
-                        } else if (state
-                            is ProductLoading<List<CategoryData>>) {
-                          final placeholder = state.loadingPlaceholder;
-                          if (placeholder != null) {
-                            categories = placeholder;
-                          }
-                        } else if (state is ProductLoading<CategoryEntities>) {
-                          final placeholder = state.loadingPlaceholder;
-                          if (placeholder != null) {
-                            categories = placeholder.categories;
-                            isSkeletonEnabled = true;
-                          }
-                        } else if (state is ProductFailed<ProductLoaded>) {
-                          final previousState = state.previousState;
-                          if (previousState != null) {
-                            categories = previousState.categoryEntities;
+                        },
+                      ),
+                      //handle state change when search button tapped
+                      ValueListenableBuilder(
+                        valueListenable: showSearchButton,
+                        builder: (context, searchButton, child) {
+                          if (searchButton == true) {
+                            return SliverToBoxAdapter(
+                              child: Column(
+                                children: [
+                                  CustomSearchBar(
+                                    controller: searchController,
+                                    focusNode: searchFocus,
+                                    onChanged: (valuie) {
+                                      context.read<ProductBloc>().add(
+                                          SearchProduct(searchKeyword: valuie));
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    height: 30,
+                                  ),
+                                ],
+                              ),
+                            );
                           } else {
+                            return const SliverToBoxAdapter(child: SizedBox());
+                          }
+                        },
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: showFilterOption,
+                        builder: (context, value, child) {
+                          if (value == true) {
+                            return FliterList(
+                              onTapNewestProduct: onTapNewestProduct,
+                              onTapOldestProduct: onTapOldestProduct,
+                            );
+                          } else {
+                            return const SliverToBoxAdapter(child: SizedBox());
+                          }
+                        },
+                      ),
+                      BlocBuilder<ProductBloc, ProductState>(
+                        builder: (context, state) {
+                          //define variable for state
+                          List<CategoryData> categories = [];
+                          String? message;
+                          bool? isSkeletonEnabled;
+
+                          //fill variable from the product state
+                          if (state is ProductLoaded) {
+                            categories = state.categoryEntities;
+                          } else if (state is ProductDeleted) {
+                            categories = state.categoryEntities;
+                          } else if (state
+                              is ProductLoading<List<CategoryData>>) {
+                            final placeholder = state.loadingPlaceholder;
+                            if (placeholder != null) {
+                              categories = placeholder;
+                            }
+                          } else if (state
+                              is ProductLoading<CategoryEntities>) {
+                            final placeholder = state.loadingPlaceholder;
+                            if (placeholder != null) {
+                              categories = placeholder.categories;
+                              isSkeletonEnabled = true;
+                            }
+                          } else if (state is ProductFailed<ProductLoaded>) {
+                            final previousState = state.previousState;
+                            if (previousState != null) {
+                              categories = previousState.categoryEntities;
+                            } else {
+                              message = state.message;
+                            }
+                          } else if (state is ProductFailed) {
                             message = state.message;
                           }
-                        } else if (state is ProductFailed) {
-                          message = state.message;
-                        }
 
-                        //build the UI
-                        if (categories.isNotEmpty) {
-                          return Skeletonizer.sliver(
-                            enabled: isSkeletonEnabled ?? false,
-                            containersColor: Style.secondaryColor,
-                            child: SliverList.separated(
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) {
-                                final category = categories[index];
-                                final products = category.productByCategory;
-                                return CategorySection(
-                                  categoryData: category,
-                                  products: products,
-                                );
-                              },
-                              separatorBuilder: (context, index) {
-                                return const SizedBox(
-                                  height: 30,
-                                );
-                              },
-                            ),
-                          );
-                        } else if (message != null) {
-                          return SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height / 4,
-                                ),
-                                Text(
-                                  message,
-                                  textAlign: TextAlign.center,
-                                  style: Style.rubikFont,
-                                ),
-                                const SizedBox(height: 40),
-                                CustomElevatedButton(
-                                  btnText: 'Try Again',
-                                  onPressed: () {
-                                    _fetchHomePageData();
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        } else if (categories.isEmpty) {
-                          return const EmptyCategorySection();
-                        } else {
-                          return const SliverToBoxAdapter(child: SizedBox());
-                        }
-                      },
-                    ),
-                    const SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 170,
+                          //build the UI
+                          if (categories.isNotEmpty) {
+                            return Skeletonizer.sliver(
+                              enabled: isSkeletonEnabled ?? false,
+                              containersColor: Style.secondaryColor,
+                              child: SliverList.separated(
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  final products = category.productByCategory;
+                                  return CategorySection(
+                                    categoryData: category,
+                                    products: products,
+                                  );
+                                },
+                                separatorBuilder: (context, index) {
+                                  return const SizedBox(
+                                    height: 30,
+                                  );
+                                },
+                              ),
+                            );
+                          } else if (message != null) {
+                            return SliverToBoxAdapter(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height / 4,
+                                  ),
+                                  Text(
+                                    message,
+                                    textAlign: TextAlign.center,
+                                    style: Style.rubikFont,
+                                  ),
+                                  const SizedBox(height: 40),
+                                  CustomElevatedButton(
+                                    btnText: 'Try Again',
+                                    onPressed: () {
+                                      _fetchHomePageData();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else if (categories.isEmpty) {
+                            return const EmptyCategorySection();
+                          } else {
+                            return const SliverToBoxAdapter(child: SizedBox());
+                          }
+                        },
                       ),
-                    )
-                  ],
+                      const SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 170,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               BottomMenus(

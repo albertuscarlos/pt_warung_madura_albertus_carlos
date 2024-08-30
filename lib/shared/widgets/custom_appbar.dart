@@ -7,6 +7,7 @@ class CustomAppbar extends StatelessWidget {
   final void Function()? onTapSuffix;
   final bool isSuffixTapped;
   final void Function()? onTapFilter;
+  final bool isShowDrawer;
   const CustomAppbar({
     super.key,
     required this.appbarTitle,
@@ -14,6 +15,7 @@ class CustomAppbar extends StatelessWidget {
     this.onTapSuffix,
     this.onTapFilter,
     this.isSuffixTapped = false,
+    this.isShowDrawer = true,
   });
 
   @override
@@ -25,13 +27,15 @@ class CustomAppbar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          InkWell(
-            onTap: Scaffold.of(context).openDrawer,
-            child: const Icon(Icons.menu, size: 28),
-          ),
-          const SizedBox(
-            width: 7,
-          ),
+          if (isShowDrawer)
+            InkWell(
+              onTap: Scaffold.of(context).openDrawer,
+              child: const Icon(Icons.menu, size: 28),
+            ),
+          if (isShowDrawer)
+            const SizedBox(
+              width: 7,
+            ),
           Text(
             appbarTitle,
             style: Style.buttonTextStyle.copyWith(fontSize: 18),
