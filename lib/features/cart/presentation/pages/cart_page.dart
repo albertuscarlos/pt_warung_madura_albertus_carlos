@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/domain/entities/cart_data.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/widgets/empty_cart_placeholder.dart';
@@ -10,7 +9,6 @@ import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/widg
 import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/widgets/payment_success_dialog.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottom_menu_section.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_appbar.dart';
-import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_dialog.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';

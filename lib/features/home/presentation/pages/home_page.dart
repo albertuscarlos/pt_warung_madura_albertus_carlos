@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/product/product_bloc.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/bloc/post_form/post_form_bloc.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/add_category_bottomsheet_form.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/add_product_bottomsheet_form.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottom_menu_section.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/bottomsheet_close_button.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottomsheet/bottomsheet_form.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/bottom_menus.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/category_section.dart';
-import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/floating_cart_button.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/empty_category_section.dart';
+import 'package:pt_warung_madura_albertus_carlos/features/home/presentation/widgets/fliter_list.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_appbar.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_dialog.dart';
+import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_drawer.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_elevated_button.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_searchbar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -41,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<FormState> addCategoryFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> addProductFormKey = GlobalKey<FormState>();
   final ValueNotifier<bool> showSearchButton = ValueNotifier(false);
+  final ValueNotifier<bool> showFilterOption = ValueNotifier(false);
 
   void _fetchHomePageData() {
     Future.microtask(
@@ -48,6 +46,117 @@ class _HomePageState extends State<HomePage> {
             LoadCategoryAndProduct(),
           ),
     );
+  }
+
+  //handle post form listener here
+  void _postFormListener(BuildContext context, PostFormState state) {
+    if (state is PostFormSuccess) {
+      context.pop();
+      _fetchHomePageData();
+      context.read<PostFormBloc>().add(ClearState());
+      productImageController.clear();
+      priceController.clear();
+      productNameController.clear();
+      categoryNameController.clear();
+      context.pop();
+      showTopSnackBar(
+        displayDuration: const Duration(seconds: 1),
+        Overlay.of(context),
+        CustomSnackBar.success(message: state.message),
+      );
+    } else if (state is PostFormFailed) {
+      context.pop();
+      showDialog(
+        context: context,
+        builder: (context) {
+          return CustomDialog(
+            dialogTitle: 'Submit Failed',
+            dialogBody: state.message,
+          );
+        },
+      );
+    } else if (state is PostFormLoading) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return const CustomDialog(
+            isLoading: true,
+            dialogBody: 'Loading...',
+          );
+        },
+      );
+    } else if (state is PostFillForm) {
+      productImageController.text =
+          state.productImage?.path.split('/').last ?? '';
+    } else {
+      productNameController.clear();
+      priceController.clear();
+      categoryNameController.clear();
+    }
+  }
+
+  //handle product bloc listener
+  void _productBlocListener(BuildContext context, ProductState state) {
+    if (state is ProductFailed<ProductLoaded>) {
+      context.pop();
+      showTopSnackBar(
+        displayDuration: const Duration(seconds: 1),
+        Overlay.of(context),
+        CustomSnackBar.error(message: state.message),
+      );
+    } else if (state is ProductDeleted) {
+      context.pop();
+      showTopSnackBar(
+        displayDuration: const Duration(seconds: 1),
+        Overlay.of(context),
+        const CustomSnackBar.success(message: 'Delete Product Success'),
+      );
+      _fetchHomePageData();
+    } else if (state is ProductLoading<List<CategoryData>>) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return const CustomDialog(
+            isLoading: true,
+            dialogBody: 'Loading...',
+          );
+        },
+      );
+    }
+  }
+
+  // _handle cart bloc listener
+  void _cartBlocListener(BuildContext context, CartState state) {
+    if (state is HomeCartLoading) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return const CustomDialog(
+            isLoading: true,
+            dialogBody: 'Loading...',
+          );
+        },
+      );
+    } else if (state is CartSuccess) {
+      context.pop();
+      showTopSnackBar(
+        displayDuration: const Duration(seconds: 1),
+        Overlay.of(context),
+        const CustomSnackBar.success(message: 'Added to cart.'),
+      );
+    } else if (state is CartFailed) {
+      context.pop();
+      showTopSnackBar(
+        displayDuration: const Duration(seconds: 1),
+        Overlay.of(context),
+        const CustomSnackBar.error(
+          message: 'Failed add product to cart.',
+        ),
+      );
+    }
   }
 
   @override
@@ -93,119 +202,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<PostFormBloc, PostFormState>(
-          listener: (context, state) {
-            if (state is PostFormSuccess) {
-              context.pop();
-              _fetchHomePageData();
-              context.read<PostFormBloc>().add(ClearState());
-              productImageController.clear();
-              priceController.clear();
-              productNameController.clear();
-              categoryNameController.clear();
-              context.pop();
-              showTopSnackBar(
-                displayDuration: const Duration(seconds: 1),
-                Overlay.of(context),
-                CustomSnackBar.success(message: state.message),
-              );
-            } else if (state is PostFormFailed) {
-              context.pop();
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return CustomDialog(
-                    dialogTitle: 'Submit Failed',
-                    dialogBody: state.message,
-                  );
-                },
-              );
-            } else if (state is PostFormLoading) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) {
-                  return const CustomDialog(
-                    isLoading: true,
-                    dialogBody: 'Loading...',
-                  );
-                },
-              );
-            } else if (state is PostFillForm) {
-              productImageController.text =
-                  state.productImage?.path.split('/').last ?? '';
-            } else {
-              productNameController.clear();
-              priceController.clear();
-              categoryNameController.clear();
-            }
-          },
-        ),
-        BlocListener<ProductBloc, ProductState>(
-          listener: (context, state) {
-            if (state is ProductFailed<ProductLoaded>) {
-              context.pop();
-              showTopSnackBar(
-                displayDuration: const Duration(seconds: 1),
-                Overlay.of(context),
-                CustomSnackBar.error(message: state.message),
-              );
-            } else if (state is ProductDeleted) {
-              context.pop();
-              showTopSnackBar(
-                displayDuration: const Duration(seconds: 1),
-                Overlay.of(context),
-                const CustomSnackBar.success(message: 'Delete Product Success'),
-              );
-              _fetchHomePageData();
-            } else if (state is ProductLoading<List<CategoryData>>) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) {
-                  return const CustomDialog(
-                    isLoading: true,
-                    dialogBody: 'Loading...',
-                  );
-                },
-              );
-            }
-          },
-        ),
-        BlocListener<CartBloc, CartState>(
-          listener: (context, state) {
-            if (state is HomeCartLoading) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) {
-                  return const CustomDialog(
-                    isLoading: true,
-                    dialogBody: 'Loading...',
-                  );
-                },
-              );
-            } else if (state is CartSuccess) {
-              context.pop();
-              showTopSnackBar(
-                displayDuration: const Duration(seconds: 1),
-                Overlay.of(context),
-                const CustomSnackBar.success(message: 'Added to cart.'),
-              );
-            } else if (state is CartFailed) {
-              context.pop();
-              showTopSnackBar(
-                displayDuration: const Duration(seconds: 1),
-                Overlay.of(context),
-                const CustomSnackBar.error(
-                  message: 'Failed add product to cart.',
-                ),
-              );
-            }
-          },
-        )
+        BlocListener<PostFormBloc, PostFormState>(listener: _postFormListener),
+        BlocListener<ProductBloc, ProductState>(listener: _productBlocListener),
+        BlocListener<CartBloc, CartState>(listener: _cartBlocListener)
       ],
       child: Scaffold(
+        drawer: const SafeArea(
+          child: Drawer(
+            backgroundColor: Style.backgroundColor,
+            child: CustomDrawer(),
+          ),
+        ),
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Stack(
@@ -222,10 +229,26 @@ class _HomePageState extends State<HomePage> {
                           isSuffixTapped: value,
                           onTapSuffix: () {
                             showSearchButton.value = !showSearchButton.value;
+                            showFilterOption.value = false;
+                            context.read<ProductBloc>().add(
+                                  SearchProduct(
+                                    searchKeyword: searchController.text = '',
+                                  ),
+                                );
+                          },
+                          onTapFilter: () {
+                            showFilterOption.value = !showFilterOption.value;
+                            context.read<ProductBloc>().add(
+                                  SearchProduct(
+                                    searchKeyword: searchController.text = '',
+                                  ),
+                                );
+                            showSearchButton.value = false;
                           },
                         );
                       },
                     ),
+                    //handle state change when search button tapped
                     ValueListenableBuilder(
                       valueListenable: showSearchButton,
                       builder: (context, searchButton, child) {
@@ -252,23 +275,16 @@ class _HomePageState extends State<HomePage> {
                         }
                       },
                     ),
-                    // const SliverToBoxAdapter(
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.end,
-                    //     children: [
-                    //       Icon(
-                    //         Icons.filter_alt_outlined,
-                    //         color: Style.textFieldBorderColor,
-                    //         size: 30,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    // const SliverToBoxAdapter(
-                    //   child: SizedBox(
-                    //     height: 10,
-                    //   ),
-                    // ),
+                    ValueListenableBuilder(
+                      valueListenable: showFilterOption,
+                      builder: (context, value, child) {
+                        if (value == true) {
+                          return FliterList();
+                        } else {
+                          return const SliverToBoxAdapter(child: SizedBox());
+                        }
+                      },
+                    ),
                     BlocBuilder<ProductBloc, ProductState>(
                       builder: (context, state) {
                         //define variable for state
@@ -314,7 +330,6 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) {
                                 final category = categories[index];
                                 final products = category.productByCategory;
-
                                 return CategorySection(
                                   categoryData: category,
                                   products: products,
@@ -352,6 +367,8 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           );
+                        } else if (categories.isEmpty) {
+                          return const EmptyCategorySection();
                         } else {
                           return const SliverToBoxAdapter(child: SizedBox());
                         }
@@ -365,101 +382,17 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FloatingCartButton(
-                    onPressed: () => context.pushNamed('cart_page'),
-                  ),
-                  const SizedBox(height: 15),
-                  BottomMenuSection(
-                    topButtonLabel: '+ Add Category',
-                    bottomButtonLabel: '+ Add Product',
-                    onPressedTopButton: () {
-                      context.read<PostFormBloc>().add(FillForm());
-                      showBarModalBottomSheet(
-                        context: context,
-                        backgroundColor: Style.secondaryColor,
-                        isDismissible: false,
-                        topControl: const BottomsheetCloseButton(),
-                        builder: (context) {
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: SingleChildScrollView(
-                              child: BottomsheetForm(
-                                title: 'Add Category',
-                                onSubmit: () {
-                                  if (addCategoryFormKey.currentState
-                                          ?.validate() ??
-                                      false) {
-                                    context.read<PostFormBloc>().add(
-                                          PostFilledCategory(),
-                                        );
-                                  }
-                                },
-                                forms: Form(
-                                  key: addCategoryFormKey,
-                                  child: AddCategoryBottomsheetForm(
-                                    categoryNameController:
-                                        categoryNameController,
-                                    categoryNameFocus: categoryNameFocus,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    onPressedBottomButton: () {
-                      context.read<PostFormBloc>().add(FillForm());
-                      showBarModalBottomSheet(
-                        context: context,
-                        backgroundColor: Style.secondaryColor,
-                        isDismissible: false,
-                        topControl: const BottomsheetCloseButton(),
-                        builder: (context) {
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: SingleChildScrollView(
-                              child: BottomsheetForm(
-                                title: 'Add Products',
-                                onSubmit: () {
-                                  if (addProductFormKey.currentState
-                                          ?.validate() ??
-                                      false) {
-                                    context.read<PostFormBloc>().add(
-                                          PostFilledProduct(),
-                                        );
-                                  }
-                                },
-                                forms: Form(
-                                  key: addProductFormKey,
-                                  child: AddProductBottomsheetForm(
-                                    productImageController:
-                                        productImageController,
-                                    productNameController:
-                                        productNameController,
-                                    priceController: priceController,
-                                    productCategoryController:
-                                        productCategoryController,
-                                    productNameFocus: productNameFocus,
-                                    priceFocus: priceFocus,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  )
-                ],
+              BottomMenus(
+                addCategoryFormKey: addCategoryFormKey,
+                addProductFormKey: addProductFormKey,
+                categoryNameController: categoryNameController,
+                productImageController: productImageController,
+                productNameController: productNameController,
+                priceController: priceController,
+                productCategoryController: productCategoryController,
+                categoryNameFocus: categoryNameFocus,
+                productNameFocus: productNameFocus,
+                priceFocus: priceFocus,
               ),
             ],
           ),

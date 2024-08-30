@@ -170,7 +170,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           );
         }
 
-        //fold request adjust the logic above
+        //fold request based on the logic above
         await result.fold((failed) {
           emit(CartFailed(message: failed.message));
         }, (success) async {
@@ -187,6 +187,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         });
       }
     });
+
     on<PayBill>((event, emit) async {
       final result = await deleteAllProduct.execute();
 

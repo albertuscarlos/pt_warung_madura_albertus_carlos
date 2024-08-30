@@ -26,3 +26,12 @@ final class SearchProduct extends ProductEvent {
   @override
   List<Object> get props => [searchKeyword];
 }
+
+final class SortProductByDate extends ProductEvent {
+  final FilterOption filterOption;
+
+  const SortProductByDate({required this.filterOption});
+
+  @override
+  List<Object> get props => [filterOption];
+}

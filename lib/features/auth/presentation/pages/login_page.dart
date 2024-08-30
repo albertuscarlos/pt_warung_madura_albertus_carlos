@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,9 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                 dialogBody: 'Loading...',
               );
             },
-          ).then((_) {
-            // context.pop();
-          });
+          );
         } else if (state is AuthFailure) {
           context.pop();
           showDialog(

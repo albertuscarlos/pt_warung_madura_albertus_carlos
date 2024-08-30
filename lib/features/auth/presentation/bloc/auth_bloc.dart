@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -22,8 +21,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignIn>((event, emit) async {
       emit(AuthLoading());
 
-      final result =
-          await postLogin.execute(loginBodyModels: event.loginBodyModels);
+      final result = await postLogin.execute(
+        loginBodyModels: event.loginBodyModels,
+      );
 
       result.fold((failed) {
         emit(AuthFailure(message: failed.message));
@@ -34,6 +34,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignOut>((event, emit) async {
       emit(AuthLoading());
+
+      await Future.delayed(const Duration(seconds: 1));
 
       final result = await authLogout.execute();
 

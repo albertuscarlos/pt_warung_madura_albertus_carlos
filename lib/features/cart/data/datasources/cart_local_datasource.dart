@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:pt_warung_madura_albertus_carlos/core/error/exceptions.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/cart/data/datasources/db/database_helper.dart';

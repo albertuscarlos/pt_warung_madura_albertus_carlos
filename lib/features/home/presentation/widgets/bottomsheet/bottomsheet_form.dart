@@ -1,7 +1,5 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
 import 'package:pt_warung_madura_albertus_carlos/shared/widgets/custom_elevated_button.dart';
 

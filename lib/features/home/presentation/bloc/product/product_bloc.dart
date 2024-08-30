@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pt_warung_madura_albertus_carlos/core/constants/dummy_data.dart';
+import 'package:pt_warung_madura_albertus_carlos/core/utils/app_enum.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/category_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/entities/product_entities.dart';
 import 'package:pt_warung_madura_albertus_carlos/features/home/domain/usecases/delete_product.dart';
@@ -143,6 +144,36 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           currentState.copyWith(
             categoryEntities:
                 event.searchKeyword != '' ? categories : searchCategory,
+          ),
+        );
+      }
+    });
+
+    on<SortProductByDate>((event, emit) async {
+      if (state is ProductLoaded) {
+        final currentState = state as ProductLoaded;
+
+        List<CategoryData> sortedCategories;
+
+        if (event.filterOption == FilterOption.newestProduct) {
+          sortedCategories = currentState.categoryEntities.map((category) {
+            final sortedProducts =
+                List<ProductData>.from(category.productByCategory!)
+                  ..sort((b, a) => a.createdAt.compareTo(b.createdAt));
+            return category.copyWith(productByCategory: sortedProducts);
+          }).toList();
+        } else {
+          sortedCategories = currentState.categoryEntities.map((category) {
+            final sortedProducts =
+                List<ProductData>.from(category.productByCategory!)
+                  ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            return category.copyWith(productByCategory: sortedProducts);
+          }).toList();
+        }
+
+        emit(
+          currentState.copyWith(
+            categoryEntities: sortedCategories,
           ),
         );
       }

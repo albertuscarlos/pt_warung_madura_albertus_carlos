@@ -6,11 +6,13 @@ class CustomAppbar extends StatelessWidget {
   final bool showSuffixIcon;
   final void Function()? onTapSuffix;
   final bool isSuffixTapped;
+  final void Function()? onTapFilter;
   const CustomAppbar({
     super.key,
     required this.appbarTitle,
     this.showSuffixIcon = true,
     this.onTapSuffix,
+    this.onTapFilter,
     this.isSuffixTapped = false,
   });
 
@@ -18,9 +20,18 @@ class CustomAppbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverAppBar(
       toolbarHeight: 100,
-      leadingWidth: 100,
+      leadingWidth: 200,
       leading: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          InkWell(
+            onTap: Scaffold.of(context).openDrawer,
+            child: const Icon(Icons.menu, size: 28),
+          ),
+          const SizedBox(
+            width: 7,
+          ),
           Text(
             appbarTitle,
             style: Style.buttonTextStyle.copyWith(fontSize: 18),
@@ -29,17 +40,27 @@ class CustomAppbar extends StatelessWidget {
       ),
       actions: [
         if (showSuffixIcon)
-          GestureDetector(
+          InkWell(
+            onTap: onTapFilter,
+            child: const Icon(Icons.filter_alt_outlined, size: 27),
+          ),
+        if (showSuffixIcon) const SizedBox(width: 20),
+        if (showSuffixIcon)
+          InkWell(
+            borderRadius: BorderRadius.circular(50),
             onTap: onTapSuffix,
             child: isSuffixTapped
                 ? const Icon(
                     Icons.search_off_outlined,
                     size: 30,
+                    color: Style.deleteBtnColor,
                   )
                 : const ImageIcon(
-                    AssetImage('assets/icons/search_icon.png'),
+                    AssetImage(
+                      'assets/icons/search_icon.png',
+                    ),
                   ),
-          )
+          ),
       ],
     );
   }

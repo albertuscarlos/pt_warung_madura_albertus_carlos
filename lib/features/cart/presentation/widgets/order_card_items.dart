@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:pt_warung_madura_albertus_carlos/config/style.dart';
@@ -55,11 +54,14 @@ class OrderCardItems extends StatelessWidget {
               ),
             if (!showCloseButton) const Expanded(child: SizedBox()),
             if (!showCloseButton && bodyText != null)
-              Text(
-                bodyText ?? '',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: Style.poppinsFont.copyWith(color: bodyTextColor),
+              Expanded(
+                child: Text(
+                  bodyText ?? '',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.end,
+                  style: Style.poppinsFont.copyWith(color: bodyTextColor),
+                ),
               ),
             if (!showCloseButton && isShowCounter)
               Container(
