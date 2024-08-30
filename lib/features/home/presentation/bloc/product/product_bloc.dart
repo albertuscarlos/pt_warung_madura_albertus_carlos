@@ -152,7 +152,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(
             currentState.copyWith(
               categoryEntities: currentState.products,
-              filterOption: FilterOption.oldestProduct,
+              filterOption: currentState.filterOption,
             ),
           );
         }
@@ -164,10 +164,17 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final currentState = state as ProductLoaded;
 
         List<CategoryData> sortedCategories;
+        List<CategoryData> sortDefaultProducts;
         FilterOption? filterOption;
 
         if (event.filterOption == FilterOption.newestProduct) {
           sortedCategories = currentState.categoryEntities.map((category) {
+            final sortedProducts =
+                List<ProductData>.from(category.productByCategory!)
+                  ..sort((b, a) => a.createdAt.compareTo(b.createdAt));
+            return category.copyWith(productByCategory: sortedProducts);
+          }).toList();
+          sortDefaultProducts = currentState.products.map((category) {
             final sortedProducts =
                 List<ProductData>.from(category.productByCategory!)
                   ..sort((b, a) => a.createdAt.compareTo(b.createdAt));
@@ -181,11 +188,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                   ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
             return category.copyWith(productByCategory: sortedProducts);
           }).toList();
+          sortDefaultProducts = currentState.products.map((category) {
+            final sortedProducts =
+                List<ProductData>.from(category.productByCategory!)
+                  ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            return category.copyWith(productByCategory: sortedProducts);
+          }).toList();
           filterOption = FilterOption.oldestProduct;
         }
 
         emit(
           currentState.copyWith(
+            products: sortDefaultProducts,
             categoryEntities: sortedCategories,
             searchCategory: sortedCategories,
             filterOption: filterOption,

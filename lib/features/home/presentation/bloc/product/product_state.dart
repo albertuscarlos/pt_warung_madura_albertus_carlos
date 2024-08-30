@@ -34,12 +34,13 @@ final class ProductLoaded<T> extends ProductState {
   });
 
   ProductLoaded copyWith({
+    List<CategoryData>? products,
     List<CategoryData>? categoryEntities,
     List<CategoryData>? searchCategory,
     FilterOption? filterOption,
   }) {
     return ProductLoaded(
-      products: products,
+      products: products ?? this.products,
       searchCategory: searchCategory ?? this.searchCategory,
       categoryEntities: categoryEntities ?? this.categoryEntities,
       productEntities: productEntities,
@@ -53,6 +54,7 @@ final class ProductLoaded<T> extends ProductState {
         categoryEntities,
         searchCategory,
         filterOption,
+        products
       ];
 }
 
